@@ -13,17 +13,16 @@ words = pickle.load(open('words.pkl','rb'))
 classes = pickle.load(open('classes.pkl','rb'))
 
 
-def clean_up_sentence(sentence):
-    sentence_words = nltk.word_tokenize(sentence)
-    sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+def clean_up_sentence(sentence): # 문장 정제
+    sentence_words = nltk.word_tokenize(sentence) #토큰화
+    sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words] # lemmatizer : 표제어 추출 / 소문자 변환
     return sentence_words
+# return bag of words array: 0 or 1 for each word in the bag that exists in the sentence 단어마다 0 또는 1 부여
 
-# return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
-
-def bow(sentence, words, show_details=True):
+def bow(sentence, words, show_details=True): # bag of words. 단어들의 순서는 전혀 고려하지 않고, 단어들의 출현 빈도(frequency)에만 집중하는 텍스트 데이터의 수치화 표현 방법
     # tokenize the pattern
     sentence_words = clean_up_sentence(sentence)
-    # bag of words - matrix of N words, vocabulary matrix
+    # bag of words - matrix of N words, vocabulary matrix 문서 행렬 매트릭스
     bag = [0]*len(words)
     for s in sentence_words:
         for i,w in enumerate(words):
@@ -34,25 +33,25 @@ def bow(sentence, words, show_details=True):
                     print ("found in bag: %s" % w)
     return(np.array(bag))
 
-def predict_class(sentence, model):
+def predict_class(sentence, model): # 예측 클래스 함수
     # filter out predictions below a threshold
     p = bow(sentence, words,show_details=False)
-    res = model.predict(np.array([p]))[0]
+    res = model.predict(np.array([p]))[0] # array : 배열 반환
     ERROR_THRESHOLD = 0.25
     results = [[i,r] for i,r in enumerate(res) if r>ERROR_THRESHOLD]
-    # sort by strength of probability
+    # sort by strength of probability. 긍정률이 높은 순으로 정렬
     results.sort(key=lambda x: x[1], reverse=True)
     return_list = []
     for r in results:
         return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
     return return_list
 
-def getResponse(ints, intents_json):
+def getResponse(ints, intents_json): 
     tag = ints[0]['intent']
-    list_of_intents = intents_json['intents']
-    for i in list_of_intents:
-        if(i['tag']== tag):
-            result = random.choice(i['responses'])
+    list_of_intents = intents_json['intents'] # intents.json의 
+    for i in list_of_intents:               
+        if(i['tag']== tag):         # tag 항목에 있으면
+            result = random.choice(i['responses'])  # responses에서 무작위로 응답
             break
     return result
 
